@@ -1,0 +1,40 @@
+#version 430 compatibility
+
+uniform float radius;
+uniform vec3 camPos;
+uniform vec3 spherePos;
+
+layout (std430, binding = 4) buffer Pos
+{
+	vec4 Positions [ ];
+};
+
+
+layout (std430, binding = 6) buffer Col 
+{
+	vec4 Colors [ ];
+};
+
+
+layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+
+
+void main()
+{
+	const vec3 G = vec3 (0.0f, -9.8f, 0.0f);
+	uint g_id = gl_GlobalInvocationID.x;
+
+	vec3 p1 = camPos;
+	vec3 p2 = Positions[g_id].xyz;
+	vec3 dir = p2 - p1;
+
+	float a = dot(dir, dir);
+	float b = 2.0f * dot(dir, p1 - spherePos);
+	float c = dot(spherePos, spherePos) + dot(camPos, camPos) - 2.0 * dot(spherePos, p1) - radius * radius;
+
+	float delta = b * b - 4 * a * c;
+	if (delta >= 0) Colors[g_id] = vec4(0.0f, 0.8f, 0.9f, 1.0f);
+	else Colors[g_id] = vec4(0.0f, 0.0f, 0.5f, 1.0f);
+	
+}
+
